@@ -5,7 +5,7 @@
 from src.processing import filter_by_state, sort_by_date
 
 
-def test_filter_by_state_executed():
+def test_filter_by_state_executed() -> None:
     """
     Тест фильтрации операций со статусом EXECUTED.
     """
@@ -27,7 +27,7 @@ def test_filter_by_state_executed():
     assert len(result) == 2, f"Ожидалось 2 операции, получено {len(result)}"
 
 
-def test_filter_by_state_canceled():
+def test_filter_by_state_canceled() -> None:
     """
     Тест фильтрации операций со статусом CANCELED.
     """
@@ -49,7 +49,7 @@ def test_filter_by_state_canceled():
     assert len(result) == 2, f"Ожидалось 2 операции, получено {len(result)}"
 
 
-def test_filter_by_state_empty_result():
+def test_filter_by_state_empty_result() -> None:
     """
     Тест фильтрации, когда нет операций с указанным статусом.
     """
@@ -63,7 +63,7 @@ def test_filter_by_state_empty_result():
     assert result == [], f"Ожидался пустой список, получено {result}"
 
 
-def test_filter_by_state_empty_input():
+def test_filter_by_state_empty_input() -> None:
     """
     Тест фильтрации с пустым входным списком.
     """
@@ -71,7 +71,7 @@ def test_filter_by_state_empty_input():
     assert result == [], "При пустом входном списке должен возвращаться пустой список"
 
 
-def test_sort_by_date_descending():
+def test_sort_by_date_descending() -> None:
     """
     Тест сортировки операций по дате по убыванию (сначала новые).
     """
@@ -98,7 +98,7 @@ def test_sort_by_date_descending():
     assert result[-1]["date"] == "2018-06-30T02:08:58.425572", "Последняя должна быть самая старая операция"
 
 
-def test_sort_by_date_ascending():
+def test_sort_by_date_ascending() -> None:
     """
     Тест сортировки операций по дате по возрастанию (сначала старые).
     """
@@ -125,7 +125,7 @@ def test_sort_by_date_ascending():
     assert result[-1]["date"] == "2019-07-03T18:35:29.512364", "Последняя должна быть самая новая операция"
 
 
-def test_sort_by_date_same_dates():
+def test_sort_by_date_same_dates() -> None:
     """
     Тест сортировки операций с одинаковыми датами.
     """
@@ -142,7 +142,7 @@ def test_sort_by_date_same_dates():
     assert all(op["date"] == "2023-01-01T12:00:00" for op in result), "Все даты должны остаться одинаковыми"
 
 
-def test_sort_by_date_empty_input():
+def test_sort_by_date_empty_input() -> None:
     """
     Тест сортировки с пустым входным списком.
     """
@@ -150,7 +150,7 @@ def test_sort_by_date_empty_input():
     assert result == [], "При пустом входном списке должен возвращаться пустой список"
 
 
-def test_sort_by_date_single_element():
+def test_sort_by_date_single_element() -> None:
     """
     Тест сортировки списка с одним элементом.
     """

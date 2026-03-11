@@ -2,9 +2,4 @@
 max-line-length = 119
 select = C,E,F,W,B,B950
 ignore = E203, W503
-exclude =
-    .git,
-    .venv,
-    __pycache__,
-    env*,
-    venv*
+exclude = .git, .venv, __pycache__, env*, venv*
