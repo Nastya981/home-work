@@ -1,52 +1,38 @@
-"""Модуль для обработки данных операций."""
+"""Модуль для обработки списка транзакций."""
 
-from typing import Any, Dict, List
+from typing import Dict, List, Any
 
 
-def filter_by_state(operations: List[Dict[str, Any]], state: str = "EXECUTED") -> List[Dict[str, Any]]:
+def filter_by_state(
+    transactions: List[Dict[str, Any]],
+    state: str = "EXECUTED"
+) -> List[Dict[str, Any]]:
     """
-    Фильтрует список операций по заданному состоянию.
+    Фильтрует список транзакций по заданному статусу.
 
     Параметры:
-        operations: Список словарей с данными об операциях
-        state: Значение для фильтрации по ключу 'state' (по умолчанию 'EXECUTED')
+        transactions: список словарей с транзакциями
+        state: статус для фильтрации (по умолчанию "EXECUTED")
 
     Возвращает:
-        Новый список, содержащий только операции с указанным состоянием
+        отфильтрованный список транзакций
     """
-    result = []
-    for operation in operations:
-        if operation.get("state") == state:
-            result.append(operation)
-    return result
+    return [item for item in transactions if item.get("state") == state]
 
 
-def sort_by_date(operations: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[str, Any]]:
+def sort_by_date(
+    transactions: List[Dict[str, Any]],
+    reverse: bool = True
+) -> List[Dict[str, Any]]:
     """
-    Сортирует список операций по дате.
+    Сортирует список транзакций по дате.
 
     Параметры:
-        operations: Список словарей с данными об операциях
-        reverse: Порядок сортировки (True - по убыванию, False - по возрастанию)
+        transactions: список словарей с транзакциями
+        reverse: если True - сортировка по убыванию, если False - по возрастанию
 
     Возвращает:
-        Новый отсортированный список
+        отсортированный список транзакций
     """
-    # Создаем копию списка
-    sorted_operations = operations.copy()
-
-    # Сортируем
-    for i in range(len(sorted_operations)):
-        for j in range(i + 1, len(sorted_operations)):
-            # Сравниваем даты
-            if reverse:
-                # По убыванию (новые сначала)
-                if sorted_operations[i].get("date", "") < sorted_operations[j].get("date", ""):
-                    sorted_operations[i], sorted_operations[j] = sorted_operations[j], sorted_operations[i]
-            else:
-                # По возрастанию (старые сначала)
-                if sorted_operations[i].get("date", "") > sorted_operations[j].get("date", ""):
-                    sorted_operations[i], sorted_operations[j] = sorted_operations[j], sorted_operations[i]
-
-    return sorted_operations
+    return sorted(transactions, key=lambda x: x["date"], reverse=reverse)
 
