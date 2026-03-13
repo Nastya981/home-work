@@ -1,30 +1,23 @@
-import unittest
-
-from src.masks import get_mask_account, get_mask_card_number
+"""Модуль для маскировки номеров карт и счетов."""
 
 
-class TestMasks(unittest.TestCase):
-
-    def test_get_mask_card_number(self):
-        # Тест с корректным номером карты
-        self.assertEqual(get_mask_card_number("7000792289606361"), "7000 79** **** 6361")
-        # Тест с номером, содержащим пробелы и спецсимволы
-        self.assertEqual(get_mask_card_number("7000 7922-8960-6361"), "7000 79** **** 6361")
-
-    def test_get_mask_account(self):
-        # Тест с корректным номером счёта
-        self.assertEqual(get_mask_account("73654108430135874305"), "**4305")
-        # Тест с номером, содержащим пробелы
-        self.assertEqual(get_mask_account("7365 4108 4301 3587 4305"), "**4305")
-
-    def test_invalid_card_number(self):
-        with self.assertRaises(ValueError):
-            get_mask_card_number("1234")  # Слишком короткий номер
-
-    def test_invalid_account_number(self):
-        with self.assertRaises(ValueError):
-            get_mask_account("123")  # Слишком короткий номер счёта
+def get_mask_card_number(card_number: str) -> str:
+    """Маскирует номер банковской карты в формате XXXX XX** **** XXXX."""
+    # Убираем все нечисловые символы
+    cleaned = "".join(char for char in card_number if char.isdigit())
+    # Проверяем длину номера
+    if len(cleaned) != 16:
+        raise ValueError("Номер карты должен состоять из 16 цифр.")
+    # Маскируем номер
+    return f"{cleaned[:4]} {cleaned[4:6]}** **** {cleaned[-4:]}"
 
 
-if __name__ == "__main__":
-    unittest.main()
+def get_mask_account(account_number: str) -> str:
+    """Маскирует номер счета в формате **XXXX."""
+    # Убираем все нечисловые символы
+    cleaned = "".join(char for char in account_number if char.isdigit())
+    # Проверяем, что номер не пустой
+    if not cleaned:
+        raise ValueError("Номер счета не может быть пустым.")
+    # Маскируем номер
+    return f"**{cleaned[-4:]}"

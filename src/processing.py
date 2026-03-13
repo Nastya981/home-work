@@ -49,3 +49,4 @@ def sort_by_date(operations: List[Dict[str, Any]], reverse: bool = True) -> List
                     sorted_operations[i], sorted_operations[j] = sorted_operations[j], sorted_operations[i]
 
     return sorted_operations
+
