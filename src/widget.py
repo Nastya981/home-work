@@ -11,7 +11,7 @@ def mask_account_card(account_info: str) -> str:
     Возвращает:
         строку с замаскированным номером
     """
-    parts = account_info.rsplit(' ', 1)
+    parts = account_info.rsplit(" ", 1)
     if len(parts) != 2:
         return account_info
 
@@ -39,7 +39,6 @@ def get_date(date_str: str) -> str:
     if not date_str:
         return ""
 
-    date_part = date_str.split('T')[0]
-    year, month, day = date_part.split('-')
+    date_part = date_str.split("T")[0]
+    year, month, day = date_part.split("-")
     return f"{day}.{month}.{year}"
-
