@@ -1,88 +1,62 @@
-# Проект home-work
+# Проект маскировки банковских карт и счетов
 
-## Описание
-Проект для обработки данных о банковских операциях. Содержит функции фильтрации и сортировки операций.
+## Описание проекта
+Данный проект представляет собой набор функций для маскировки номеров банковских карт и счетов, а также для обработки и фильтрации списка транзакций. Проект разработан на Python и включает в себя модули для различных операций с банковскими данными.
 
-## Требования
-- Python >= 3.13
-- Poetry >= 2.0.0
+## Структура проекта
+project/
+│
+├── src/ # Исходный код проекта
+│ ├── init.py
+│ ├── masks.py # Функции маскировки карт и счетов
+│ ├── widget.py # Функции для виджетов (даты, маскировка)
+│ └── processing.py # Функции обработки списков транзакций
+│
+├── tests/ # Тесты проекта
+│ ├── init.py
+│ ├── conftest.py # Фикстуры для тестов
+│ ├── test_masks.py # Тесты для модуля masks
+│ ├── test_widget.py # Тесты для модуля widget
+│ ├── test_processing.py # Тесты для модуля processing
+│ └── test_integration.py # Интеграционные тесты
+│
+├── htmlcov/ # Отчеты о покрытии (генерируется автоматически)
+├── requirements.txt # Зависимости проекта
+└── README.md # Документация проекта
 
-## Установка и настройка
+## Установка и запуск
 
-## Тестирование
+### Требования
+- Python 3.9 или выше
+- pip (менеджер пакетов Python)
 
-Проект покрыт unit-тестами с использованием pytest.
-
-### Структура тестов
-tests/
-├── conftest.py # Фикстуры для тестов
-├── test_integration.py # Интеграционные тесты
-├── test_masks.py # Тесты для модуля masks
-├── test_processing.py # Тесты для модуля processing
-└── test_widget.py # Тесты для модуля widget
-
-### Запуск тестов
-
+### Установка зависимостей
 ```bash
-# Установка зависимостей
-pip install pytest pytest-cov isort flake8
+# Установка зависимостей для работы проекта
+pip install -r requirements.txt
 
-# Запуск всех тестов
+# Установка зависимостей для тестирования
+pip install pytest pytest-cov pytest-mock
+
+# Установка инструментов для проверки качества кода (опционально)
+pip install flake8 isort black
+
+## Тестирование проекта
+
+Запустить все тесты с подробным выводом
 pytest tests/ -v
 
-# Запуск с проверкой покрытия
-pytest --cov=src tests/
+Запустить все тесты без подробного вывода
+pytest tests/
 
-# Проверка стиля кода
-flake8 src/ tests/
-isort --check src/ tests/
+## Тесты для модуля masks
+pytest tests/test_masks.py -v
 
-### Предварительные требования
-- **Python**: версия 3.13 или выше
-- **Poetry**: версия 2.0.0 или выше (менеджер зависимостей)
-- **Git**: для клонирования репозитория
+Тесты для модуля widget
+pytest tests/test_widget.py -v
 
-### Пошаговая инструкция по установке
+Тесты для модуля processing
+pytest tests/test_processing.py -v
 
-
-## 3. Создаем отчет о покрытии в формате HTML
-
-```bash
-# Создаем папку htmlcov с отчетом
-pytest --cov=src --cov-report=html tests/
-
-# Добавляем папку с отчетом в git
-git add htmlcov/
-
-# Создаем .gitignore для исключения временных файлов
-cat > .gitignore << 'EOF'
-# Byte-compiled
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-
-# Virtual environment
-.venv/
-venv/
-env/
-
-# IDE
-.vscode/
-.idea/
-
-# Test cache
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Distribution
-dist/
-build/
-*.egg-info/
-
-#### Шаг 1: Клонирование репозитория
-Откройте терминал и выполните:
-```bash
-git clone https://github.com/Nastya981/home-work.git
-cd home-work
+Интеграционные тесты
+pytest tests/test_integration.py -v
