@@ -29,11 +29,7 @@ def filter_by_currency(
     """
     for transaction in transactions:
         try:
-            transaction_currency = (
-                transaction.get("operationAmount", {})
-                .get("currency", {})
-                .get("code", "")
-            )
+            transaction_currency = transaction.get("operationAmount", {}).get("currency", {}).get("code", "")
             if transaction_currency == currency:
                 yield transaction
         except (AttributeError, KeyError, TypeError):
@@ -41,9 +37,7 @@ def filter_by_currency(
             continue
 
 
-def transaction_descriptions(
-    transactions: List[Dict[str, Any]]
-) -> Generator[str, None, None]:
+def transaction_descriptions(transactions: List[Dict[str, Any]]) -> Generator[str, None, None]:
     """
     Возвращает описания транзакций по очереди.
 
