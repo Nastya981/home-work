@@ -5,7 +5,7 @@ from src.logger_config import setup_logger
 # астраиваем логгер для main
 logger = setup_logger('main')
 
-def main():
+def main() -> None:
     logger.info("="*50)
     logger.info("С Ы")
     logger.info("="*50)
@@ -23,12 +23,12 @@ def main():
     print("СЫ Т")
     print("="*60)
     
-    total_rub = 0.0
+    total_rub: float = 0.0
     
     for i, transaction in enumerate(transactions, 1):
         try:
             logger.debug(f"бработка транзакции {i}: {transaction.get('description', 'Unknown')}")
-            amount_in_rub = convert_to_rubles(transaction)
+            amount_in_rub: float = convert_to_rubles(transaction)
             total_rub += amount_in_rub
             
             operation_amount = transaction.get('operationAmount', {})
