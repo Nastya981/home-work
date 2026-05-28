@@ -1,7 +1,31 @@
-﻿.venv/
+﻿# иртуальное окружение
+.venv/
+venv/
+ENV/
+
+# эш Python
 __pycache__/
+*.pyc
+*.pyo
 .pytest_cache/
 .mypy_cache/
-.env
-.idea/
 .coverage
+htmlcov/
+
+# Секретные данные
+.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ругое
+*.log
+*.pid
+*.rdb
+*.aof
