@@ -4,6 +4,7 @@ import requests
 _currency_cache: Dict[str, float] = {}
 
 def get_exchange_rate(from_currency: str) -> Optional[float]:
+    """олучает курс валюты к рублю через внешнее API"""
     if from_currency in _currency_cache:
         return _currency_cache[from_currency]
     
@@ -16,17 +17,26 @@ def get_exchange_rate(from_currency: str) -> Optional[float]:
             _currency_cache[from_currency] = rate
             return rate
         return None
-    except:
+    except Exception:
         return None
 
 def convert_to_rubles(transaction: Dict[str, Any]) -> float:
-    amount = transaction.get('amount')
-    currency = transaction.get('currency')
+    """онвертирует сумму транзакции в рубли"""
+    # роверяем наличие полей
+    if 'operationAmount' not in transaction:
+        raise ValueError("ет поля operationAmount")
+    
+    operation_amount = transaction['operationAmount']
+    amount = operation_amount.get('amount')
+    currency = operation_amount.get('currency', {}).get('code')
     
     if amount is None or currency is None:
-        raise ValueError("ет полей amount или currency")
+        raise ValueError("ет полей amount или currency в operationAmount")
     
-    amount_float = float(amount)
+    try:
+        amount_float = float(amount)
+    except (ValueError, TypeError):
+        raise ValueError(f"екорректная сумма: {amount}")
     
     if currency.upper() == 'RUB':
         return amount_float
