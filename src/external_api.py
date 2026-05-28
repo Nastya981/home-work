@@ -1,29 +1,44 @@
 ﻿from typing import Dict, Any, Optional
 import requests
+from src.logger_config import setup_logger
+
+# астраиваем логгер для модуля external_api
+logger = setup_logger('external_api')
 
 _currency_cache: Dict[str, float] = {}
 
 def get_exchange_rate(from_currency: str) -> Optional[float]:
     """олучает курс валюты к рублю через внешнее API"""
+    logger.info(f"апрос курса {from_currency} к RUB")
+    
     if from_currency in _currency_cache:
-        return _currency_cache[from_currency]
+        rate = _currency_cache[from_currency]
+        logger.debug(f"урс {from_currency} = {rate} (из кэша)")
+        return rate
     
     try:
+        logger.debug(f"тправка запроса к API для {from_currency}")
         response = requests.get(f"https://api.exchangerate-api.com/v4/latest/{from_currency}", timeout=10)
         data = response.json()
         
         if 'rates' in data and 'RUB' in data['rates']:
             rate = data['rates']['RUB']
             _currency_cache[from_currency] = rate
+            logger.info(f"олучен курс {from_currency} = {rate} RUB")
             return rate
-        return None
-    except Exception:
+        else:
+            logger.error(f"е удалось получить курс {from_currency}: ответ API не содержит RUB")
+            return None
+    except Exception as e:
+        logger.error(f"шибка при запросе курса {from_currency}: {e}")
         return None
 
 def convert_to_rubles(transaction: Dict[str, Any]) -> float:
     """онвертирует сумму транзакции в рубли"""
-    # роверяем наличие полей
+    logger.debug(f"ачало конвертации транзакции: {transaction.get('description', 'Unknown')}")
+    
     if 'operationAmount' not in transaction:
+        logger.error(" транзакции отсутствует поле operationAmount")
         raise ValueError("ет поля operationAmount")
     
     operation_amount = transaction['operationAmount']
@@ -31,19 +46,28 @@ def convert_to_rubles(transaction: Dict[str, Any]) -> float:
     currency = operation_amount.get('currency', {}).get('code')
     
     if amount is None or currency is None:
+        logger.error(f"тсутствуют поля amount или currency: amount={amount}, currency={currency}")
         raise ValueError("ет полей amount или currency в operationAmount")
     
     try:
         amount_float = float(amount)
-    except (ValueError, TypeError):
+        logger.debug(f"Сумма: {amount_float} {currency}")
+    except (ValueError, TypeError) as e:
+        logger.error(f"екорректная сумма: {amount} - {e}")
         raise ValueError(f"екорректная сумма: {amount}")
     
     if currency.upper() == 'RUB':
+        logger.info(f"онвертация не требуется: {amount_float} RUB")
         return amount_float
     
     if currency.upper() in ['USD', 'EUR']:
         rate = get_exchange_rate(currency.upper())
         if rate:
-            return amount_float * rate
+            result = amount_float * rate
+            logger.info(f"онвертация: {amount_float} {currency} = {result:.2f} RUB")
+            return result
+        else:
+            logger.warning(f"е удалось конвертировать {currency}, возвращаем 0")
     
+    logger.warning(f"алюта {currency} не поддерживается")
     return 0.0
