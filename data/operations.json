@@ -10,7 +10,7 @@
         "code": "USD"
       }
     },
-    "description": "еревод организации",
+    "description": "Перевод организации",
     "from": "MasterCard 7158300734726758",
     "to": "Счет 35383033474447895560"
   },
@@ -25,7 +25,7 @@
         "code": "USD"
       }
     },
-    "description": "еревод со счета на счет",
+    "description": "Перевод со счета на счет",
     "from": "Счет 75106830613657916952",
     "to": "Счет 11776614605963066702"
   },
@@ -40,8 +40,38 @@
         "code": "RUB"
       }
     },
-    "description": "еревод с карты на карту",
+    "description": "Перевод с карты на карту",
     "from": "Visa 1952884582294469",
     "to": "Maestro 5463049434517967"
+  },
+  {
+    "id": 4,
+    "state": "CANCELED",
+    "date": "2019-07-08T10:51:59.312885",
+    "operationAmount": {
+      "amount": "121.87",
+      "currency": {
+        "name": "USD",
+        "code": "USD"
+      }
+    },
+    "description": "Перевод организации",
+    "from": "Visa 4651730494609217",
+    "to": "Счет 43673665194076909191"
+  },
+  {
+    "id": 5,
+    "state": "EXECUTED",
+    "date": "2019-06-30T22:56:31.875213",
+    "operationAmount": {
+      "amount": "8213.73",
+      "currency": {
+        "name": "EUR",
+        "code": "EUR"
+      }
+    },
+    "description": "Перевод с карты на карту",
+    "from": "MasterCard 3007688751680516",
+    "to": "Maestro 4954475162181325"
   }
 ]

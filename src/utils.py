@@ -1,32 +1,58 @@
 ﻿import json
 from typing import List, Dict, Any
-from src.logger_config import setup_logger
+import logging
+import os
 
-# астраиваем логгер для модуля utils
-logger = setup_logger('utils')
+
+# Настраиваем логгер для модуля utils
+logger = logging.getLogger('utils')
+logger.setLevel(logging.DEBUG)
+
+# Создаём папку logs если её нет
+os.makedirs('logs', exist_ok=True)
+
+# Настраиваем file_handler
+file_handler = logging.FileHandler('logs/utils.log', mode='w', encoding='utf-8')
+file_handler.setLevel(logging.DEBUG)
+
+# Настраиваем формат
+formatter = logging.Formatter(
+    '%(asctime)s | %(name)s | %(levelname)s | %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+file_handler.setFormatter(formatter)
+
+# Добавляем обработчик к логгеру
+logger.addHandler(file_handler)
+
 
 def load_transactions_from_json(file_path: str) -> List[Dict[str, Any]]:
-    """агружает список транзакций из JSON-файла"""
-    logger.info(f"ачало загрузки транзакций из файла: {file_path}")
-    
+    """
+    Загружает список транзакций из JSON-файла
+    """
+    logger.info(f"Начало загрузки транзакций из файла: {file_path}")
+
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
+            logger.debug(f"Файл {file_path} успешно открыт")
             data = json.load(file)
-            
+            logger.debug(f"JSON успешно декодирован, тип данных: {type(data)}")
+
             if isinstance(data, list):
-                logger.info(f"спешно загружено {len(data)} транзакций")
-                logger.debug(f"ервая транзакция: {data[0] if data else 'None'}")
+                logger.info(f"Успешно загружено {len(data)} транзакций")
+                if data:
+                    logger.debug(f"Первая транзакция: {data[0]}")
                 return data
             else:
-                logger.error(f"анные не являются списком: {type(data)}")
+                logger.error(f"Данные в файле не являются списком. Фактический тип: {type(data)}")
                 return []
-                
+
     except FileNotFoundError as e:
-        logger.error(f"айл не найден: {file_path} - {e}")
+        logger.error(f"Файл не найден: {file_path}. Ошибка: {e}")
         return []
     except json.JSONDecodeError as e:
-        logger.error(f"шибка декодирования JSON: {e}")
+        logger.error(f"Ошибка декодирования JSON в файле {file_path}. Ошибка: {e}")
         return []
     except Exception as e:
-        logger.error(f"еожиданная ошибка: {e}")
+        logger.error(f"Неожиданная ошибка при загрузке файла {file_path}: {e}")
         return []
