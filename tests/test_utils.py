@@ -37,3 +37,21 @@ def test_load_transactions_from_json_invalid_json():
         result = load_transactions_from_json(f.name)
         assert result == []
         os.unlink(f.name)
+
+def test_load_transactions_from_json_not_list():
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump({"key": "value"}, f)
+        f.close()
+        
+        result = load_transactions_from_json(f.name)
+        assert result == []
+        os.unlink(f.name)
+
+def test_load_transactions_from_json_empty_file():
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        f.write('')
+        f.close()
+        
+        result = load_transactions_from_json(f.name)
+        assert result == []
+        os.unlink(f.name)
