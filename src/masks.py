@@ -10,8 +10,8 @@ logger.setLevel(logging.DEBUG)
 # Создаём папку logs если её нет
 os.makedirs('logs', exist_ok=True)
 
-# Настраиваем file_handler
-file_handler = logging.FileHandler('logs/masks.log', mode='w', encoding='utf-8')
+# Настраиваем file_handler - mode='a' для дозаписи
+file_handler = logging.FileHandler('logs/masks.log', mode='a', encoding='utf-8')
 file_handler.setLevel(logging.DEBUG)
 
 # Настраиваем формат
@@ -30,7 +30,6 @@ def get_mask_card_number(card_number: Union[str, int]) -> str:
     Маскирует номер карты (показывает первые 6 и последние 4 цифры)
 
     Пример: 1234567890123456 -> 1234 56** **** 3456
-    Пример: 7000 7922-8960-6361 -> 7000 79** **** 6361
     """
     try:
         # Удаляем все пробелы и дефисы

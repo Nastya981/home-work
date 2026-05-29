@@ -11,8 +11,8 @@ logger.setLevel(logging.DEBUG)
 # Создаём папку logs если её нет
 os.makedirs('logs', exist_ok=True)
 
-# Настраиваем file_handler
-file_handler = logging.FileHandler('logs/utils.log', mode='w', encoding='utf-8')
+# Настраиваем file_handler - mode='a' для дозаписи
+file_handler = logging.FileHandler('logs/utils.log', mode='a', encoding='utf-8')
 file_handler.setLevel(logging.DEBUG)
 
 # Настраиваем формат

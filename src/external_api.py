@@ -14,8 +14,8 @@ logger.setLevel(logging.DEBUG)
 # Создаём папку logs если её нет
 os.makedirs('logs', exist_ok=True)
 
-# Настраиваем file_handler
-file_handler = logging.FileHandler('logs/external_api.log', mode='w', encoding='utf-8')
+# Настраиваем file_handler - mode='a' для дозаписи
+file_handler = logging.FileHandler('logs/external_api.log', mode='a', encoding='utf-8')
 file_handler.setLevel(logging.DEBUG)
 
 # Настраиваем формат
@@ -44,7 +44,7 @@ def get_exchange_rate(from_currency: str) -> Optional[float]:
 
     try:
         logger.debug(f"Отправка запроса к API для {from_currency}")
-        
+
         # Используем API ключ в headers (как требует документация)
         if API_KEY:
             headers = {'apikey': API_KEY}
@@ -53,7 +53,7 @@ def get_exchange_rate(from_currency: str) -> Optional[float]:
         else:
             # Fallback на бесплатный API если ключа нет
             response = requests.get(f"https://api.exchangerate-api.com/v4/latest/{from_currency}", timeout=10)
-        
+
         response.raise_for_status()
         data: Dict[str, Any] = response.json()
 

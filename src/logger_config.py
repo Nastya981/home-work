@@ -24,9 +24,9 @@ def setup_logger(module_name: str, log_level: int = logging.DEBUG) -> logging.Lo
     if logger.handlers:
         logger.handlers.clear()
 
-    # Создаём обработчик для записи в файл
+    # Создаём обработчик для записи в файл - mode='a' для дозаписи
     log_file = f'logs/{module_name}.log'
-    file_handler = logging.FileHandler(log_file, mode='w', encoding='utf-8')
+    file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
     file_handler.setLevel(log_level)
 
     # Формат лога: время | модуль | уровень | сообщение
