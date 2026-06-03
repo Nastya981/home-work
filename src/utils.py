@@ -1,7 +1,8 @@
 ﻿import json
-from typing import List, Dict, Any
 import logging
 import os
+from typing import Any, Dict, List
+
 from src.file_reader import detect_and_read_file
 
 # Настраиваем логгер для модуля utils

@@ -1,5 +1,5 @@
-﻿from typing import Union
-import re
+﻿import re
+from typing import Union
 
 
 def mask_account_card(card_or_account: Union[str, int]) -> str:

@@ -1,7 +1,8 @@
-﻿import pandas as pd
-from typing import List, Dict, Any, Optional
-import logging
-import os
+﻿from typing import Any, Dict, List, Optional
+
+import pandas as pd
+
+# Импорты удалены, так как не используются
 from src.logger_config import setup_logger
 
 # Настраиваем логгер

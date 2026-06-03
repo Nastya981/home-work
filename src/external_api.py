@@ -1,7 +1,8 @@
-﻿from typing import Dict, Any, Optional
-import requests
-import logging
+﻿import logging
 import os
+from typing import Any, Dict, Optional
+
+import requests
 from dotenv import load_dotenv
 
 # Загружаем переменные окружения

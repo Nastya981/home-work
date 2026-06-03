@@ -1,7 +1,7 @@
-﻿from typing import Union
-import logging
+﻿import logging
 import os
 import re
+from typing import Union
 
 # Настраиваем логгер для модуля masks
 logger = logging.getLogger('masks')
