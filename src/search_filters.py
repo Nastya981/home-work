@@ -1,5 +1,6 @@
 ﻿import re
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from src.logger_config import setup_logger
 
 # Настраиваем логгер
@@ -7,10 +8,7 @@ logger = setup_logger('search_filters')
 
 
 def search_transactions_by_description(transactions: List[Dict[str, Any]], search_string: str) -> List[Dict[str, Any]]:
-    """
-    Ищет транзакции, содержащие заданную строку в описании.
-    Использует регулярные выражения для поиска.
-    """
+    """Ищет транзакции, содержащие заданную строку в описании."""
     logger.info(f"Поиск транзакций по строке: '{search_string}'")
 
     if not transactions:
@@ -43,9 +41,7 @@ def search_transactions_by_description(transactions: List[Dict[str, Any]], searc
 
 
 def count_transactions_by_categories(transactions: List[Dict[str, Any]], categories: List[str]) -> Dict[str, int]:
-    """
-    Подсчитывает количество операций в каждой категории.
-    """
+    """Подсчитывает количество операций в каждой категории."""
     logger.info("Подсчёт транзакций по категориям: " + str(categories))
 
     if not transactions:
@@ -71,9 +67,7 @@ def count_transactions_by_categories(transactions: List[Dict[str, Any]], categor
 
 
 def filter_by_state(transactions: List[Dict[str, Any]], state: str) -> List[Dict[str, Any]]:
-    """
-    Фильтрует транзакции по статусу.
-    """
+    """Фильтрует транзакции по статусу."""
     logger.info("Фильтрация транзакций по статусу: " + state)
 
     if not transactions:
@@ -93,9 +87,7 @@ def filter_by_state(transactions: List[Dict[str, Any]], state: str) -> List[Dict
 
 
 def filter_by_currency(transactions: List[Dict[str, Any]], currency: str = 'RUB') -> List[Dict[str, Any]]:
-    """
-    Фильтрует транзакции по валюте.
-    """
+    """Фильтрует транзакции по валюте."""
     logger.info("Фильтрация транзакций по валюте: " + currency)
 
     if not transactions:
