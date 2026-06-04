@@ -1,0 +1,4 @@
+﻿id,amount,currency,description,state,date
+1,100,USD,Online purchase,EXECUTED,2019-07-03
+2,250,EUR,Restaurant payment,CANCELED,2019-04-04
+3,5000,RUB,Grocery shopping,EXECUTED,2019-03-23

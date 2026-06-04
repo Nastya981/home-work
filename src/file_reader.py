@@ -1,11 +1,8 @@
-﻿from typing import Any, Dict, List, Optional
+﻿import pandas as pd
+from typing import List, Dict, Any, Optional
 
-import pandas as pd
-
-# Импорты удалены, так как не используются
 from src.logger_config import setup_logger
 
-# Настраиваем логгер
 logger = setup_logger('file_reader')
 
 
@@ -22,8 +19,8 @@ def read_csv_transactions(file_path: str) -> List[Dict[str, Any]]:
     logger.info(f"Начало чтения CSV-файла: {file_path}")
 
     try:
-        # Читаем CSV файл
-        df = pd.read_csv(file_path)
+        # Читаем CSV файл с правильной обработкой заголовков
+        df = pd.read_csv(file_path, encoding='utf-8')
 
         # Проверяем, что файл не пустой
         if df.empty:
@@ -33,15 +30,15 @@ def read_csv_transactions(file_path: str) -> List[Dict[str, Any]]:
         # Преобразуем DataFrame в список словарей
         transactions = df.to_dict(orient='records')
 
-        # Приводим типы данных
+        # Обрабатываем NaN значения
         for transaction in transactions:
-            # Преобразуем NaN в None
             for key, value in transaction.items():
                 if pd.isna(value):
                     transaction[key] = None
 
         logger.info(f"Успешно загружено {len(transactions)} транзакций из CSV")
-        logger.debug(f"Первая транзакция: {transactions[0] if transactions else 'None'}")
+        if transactions:
+            logger.debug(f"Первая транзакция: {transactions[0]}")
         return transactions
 
     except FileNotFoundError as e:
@@ -71,23 +68,20 @@ def read_excel_transactions(file_path: str) -> List[Dict[str, Any]]:
         # Читаем Excel файл
         df = pd.read_excel(file_path, engine='openpyxl')
 
-        # Проверяем, что файл не пустой
         if df.empty:
             logger.warning(f"Excel-файл {file_path} пуст")
             return []
 
-        # Преобразуем DataFrame в список словарей
         transactions = df.to_dict(orient='records')
 
-        # Приводим типы данных
         for transaction in transactions:
-            # Преобразуем NaN в None
             for key, value in transaction.items():
                 if pd.isna(value):
                     transaction[key] = None
 
         logger.info(f"Успешно загружено {len(transactions)} транзакций из Excel")
-        logger.debug(f"Первая транзакция: {transactions[0] if transactions else 'None'}")
+        if transactions:
+            logger.debug(f"Первая транзакция: {transactions[0]}")
         return transactions
 
     except FileNotFoundError as e:
@@ -110,10 +104,10 @@ def detect_and_read_file(file_path: str) -> Optional[List[Dict[str, Any]]]:
     """
     logger.info(f"Определение типа файла: {file_path}")
 
-    if file_path.endswith('.csv'):
+    if file_path.lower().endswith('.csv'):
         logger.debug("Определён формат CSV")
         return read_csv_transactions(file_path)
-    elif file_path.endswith('.xlsx'):
+    elif file_path.lower().endswith('.xlsx'):
         logger.debug("Определён формат Excel")
         return read_excel_transactions(file_path)
     else:
