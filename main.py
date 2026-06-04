@@ -1,62 +1,36 @@
-﻿from typing import List, Dict, Any, Optional
+﻿import re
+from collections import Counter
+from typing import List, Dict, Any
 from src.utils import load_transactions_from_file
 from src.external_api import convert_to_rubles
-from src.search_filters import filter_by_state, search_transactions_by_description, filter_by_currency
 from src.logger_config import setup_logger
 from src.masks import get_mask_card_number, get_mask_account
-import re
+from src.process_operations import filter_operations_by_description, count_operations_by_categories
 
-# Настраиваем логгер
 logger = setup_logger('main')
 
 
-def get_valid_status() -> str:
-    """Запрашивает у пользователя корректный статус операции"""
-    valid_statuses = ['EXECUTED', 'CANCELED', 'PENDING']
-
-    while True:
-        print("\nВведите статус, по которому необходимо выполнить фильтрацию.")
-        print("Доступные для фильтровки статусы: EXECUTED, CANCELED, PENDING")
-        status = input("Статус: ").strip().upper()
-
-        if status in valid_statuses:
-            logger.info(f"Пользователь выбрал статус: {status}")
-            return status
-        else:
-            print(f"Статус операции \"{status}\" недоступен.")
-            logger.warning(f"Пользователь ввел некорректный статус: {status}")
+def filter_operations_by_status(transactions: List[Dict[str, Any]], status: str) -> List[Dict[str, Any]]:
+    """Фильтрует операции по статусу"""
+    status_upper = status.upper()
+    return [t for t in transactions if t.get('state', '').upper() == status_upper]
 
 
-def get_yes_no(prompt: str) -> bool:
-    """Запрашивает у пользователя ответ Да/Нет"""
-    while True:
-        answer = input(f"{prompt} (Да/Нет): ").strip().lower()
-        if answer in ['да', 'yes', 'y', 'д']:
-            logger.info(f"Пользователь ответил Да на вопрос: {prompt}")
-            return True
-        elif answer in ['нет', 'no', 'n', 'н']:
-            logger.info(f"Пользователь ответил Нет на вопрос: {prompt}")
-            return False
-        else:
-            print("Пожалуйста, ответьте 'Да' или 'Нет'")
-
-
-def get_sort_order() -> str:
-    """Запрашивает направление сортировки"""
-    while True:
-        order = input("Отсортировать по возрастанию или по убыванию? ").strip().lower()
-        if order in ['по возрастанию', 'возрастанию', 'asc', 'возраст']:
-            return 'asc'
-        elif order in ['по убыванию', 'убыванию', 'desc', 'убыв']:
-            return 'desc'
-        else:
-            print("Пожалуйста, введите 'по возрастанию' или 'по убыванию'")
+def filter_operations_by_currency(transactions: List[Dict[str, Any]], currency: str = 'RUB') -> List[Dict[str, Any]]:
+    """Фильтрует операции по валюте"""
+    currency_upper = currency.upper()
+    result = []
+    for t in transactions:
+        op_amount = t.get('operationAmount', {})
+        t_currency = op_amount.get('currency', {}).get('code', '')
+        if t_currency.upper() == currency_upper:
+            result.append(t)
+    return result
 
 
 def format_transaction(transaction: Dict[str, Any]) -> str:
-    """Форматирует транзакцию для вывода в консоль"""
+    """Форматирует транзакцию для вывода"""
     try:
-        # Получаем дату
         date_str = transaction.get('date', '')
         if 'T' in date_str:
             date_part = date_str.split('T')[0]
@@ -65,15 +39,11 @@ def format_transaction(transaction: Dict[str, Any]) -> str:
         else:
             formatted_date = date_str[:10] if len(date_str) >= 10 else date_str
 
-        # Получаем описание
         description = transaction.get('description', 'Нет описания')
+        op_amount = transaction.get('operationAmount', {})
+        amount = op_amount.get('amount', '0')
+        currency = op_amount.get('currency', {}).get('code', 'RUB')
 
-        # Получаем сумму и валюту
-        operation_amount = transaction.get('operationAmount', {})
-        amount = operation_amount.get('amount', '0')
-        currency = operation_amount.get('currency', {}).get('code', 'RUB')
-
-        # Конвертируем в рубли если нужно
         if currency != 'RUB':
             try:
                 amount_float = convert_to_rubles(transaction)
@@ -82,11 +52,9 @@ def format_transaction(transaction: Dict[str, Any]) -> str:
             except:
                 pass
 
-        # Форматируем from и to
         from_info = transaction.get('from', '')
         to_info = transaction.get('to', '')
 
-        # Маскируем номера карт/счетов
         if from_info:
             parts = from_info.split()
             if len(parts) > 1:
@@ -109,24 +77,55 @@ def format_transaction(transaction: Dict[str, Any]) -> str:
                     masked = get_mask_account(number)
                     to_info = f"{' '.join(parts[:-1])} {masked}"
 
-        # Собираем строку
         result = f"\n{formatted_date} {description}"
         if from_info and to_info:
             result += f"\n{from_info} -> {to_info}"
         result += f"\nСумма: {amount} {currency}"
-
         return result
-
     except Exception as e:
-        logger.error(f"Ошибка форматирования транзакции: {e}")
-        return f"Ошибка форматирования: {transaction}"
+        logger.error(f"Ошибка форматирования: {e}")
+        return f"Ошибка: {transaction}"
+
+
+def get_valid_status() -> str:
+    """Запрашивает корректный статус операции"""
+    valid_statuses = ['EXECUTED', 'CANCELED', 'PENDING']
+    while True:
+        print("\nВведите статус, по которому необходимо выполнить фильтрацию.")
+        print("Доступные для фильтровки статусы: EXECUTED, CANCELED, PENDING")
+        status = input("Статус: ").strip().upper()
+        if status in valid_statuses:
+            logger.info(f"Выбран статус: {status}")
+            return status
+        print(f"Статус операции \"{status}\" недоступлен.")
+
+
+def get_yes_no(prompt: str) -> bool:
+    """Запрашивает ответ Да/Нет"""
+    while True:
+        answer = input(f"{prompt} (Да/Нет): ").strip().lower()
+        if answer in ['да', 'yes', 'y', 'д']:
+            return True
+        if answer in ['нет', 'no', 'n', 'н']:
+            return False
+        print("Пожалуйста, ответьте 'Да' или 'Нет'")
+
+
+def get_sort_order() -> str:
+    """Запрашивает направление сортировки"""
+    while True:
+        order = input("Отсортировать по возрастанию или по убыванию? ").strip().lower()
+        if order in ['по возрастанию', 'возрастанию', 'asc']:
+            return 'asc'
+        if order in ['по убыванию', 'убыванию', 'desc']:
+            return 'desc'
+        print("Введите 'по возрастанию' или 'по убыванию'")
 
 
 def main() -> None:
     """Основная функция программы"""
     logger.info("=" * 50)
     logger.info("ЗАПУСК ПРОГРАММЫ")
-    logger.info("=" * 50)
 
     print("\nПривет! Добро пожаловать в программу работы с банковскими транзакциями.")
     print("Выберите необходимый пункт меню:")
@@ -135,38 +134,24 @@ def main() -> None:
     print("3. Получить информацию о транзакциях из XLSX-файла")
 
     choice = input("\nВаш выбор: ").strip()
+    file_map = {'1': 'data/operations.json', '2': 'data/transactions.csv', '3': 'data/transactions_excel.xlsx'}
+    file_path = file_map.get(choice, 'data/operations.json')
+    print(f"\nДля обработки выбран файл: {file_path}")
 
-    file_path = None
-    if choice == '1':
-        file_path = 'data/operations.json'
-        print("\nДля обработки выбран JSON-файл.")
-    elif choice == '2':
-        file_path = 'data/transactions.csv'
-        print("\nДля обработки выбран CSV-файл.")
-    elif choice == '3':
-        file_path = 'data/transactions_excel.xlsx'
-        print("\nДля обработки выбран XLSX-файл.")
-    else:
-        print("Неверный выбор. Используем JSON-файл по умолчанию.")
-        file_path = 'data/operations.json'
-
-    logger.info(f"Загрузка транзакций из файла: {file_path}")
     transactions = load_transactions_from_file(file_path)
-
     if not transactions:
-        print("\nНе удалось загрузить транзакции. Проверьте наличие файла.")
-        logger.error("Не удалось загрузить транзакции")
+        print("Не удалось загрузить транзакции.")
         return
 
     print(f"\nЗагружено {len(transactions)} транзакций.")
 
     # Фильтрация по статусу
     status = get_valid_status()
-    filtered_transactions = filter_by_state(transactions, status)
+    filtered = filter_operations_by_status(transactions, status)
     print(f"\nОперации отфильтрованы по статусу \"{status}\"")
-    logger.info(f"После фильтрации по статусу осталось {len(filtered_transactions)} транзакций")
+    print(f"Найдено {len(filtered)} операций.")
 
-    if not filtered_transactions:
+    if not filtered:
         print("\nНе найдено ни одной транзакции, подходящей под ваши условия фильтрации")
         return
 
@@ -174,40 +159,37 @@ def main() -> None:
     if get_yes_no("\nОтсортировать операции по дате?"):
         order = get_sort_order()
         reverse = (order == 'desc')
-        filtered_transactions.sort(
-            key=lambda x: x.get('date', ''),
-            reverse=reverse
-        )
+        filtered.sort(key=lambda x: x.get('date', ''), reverse=reverse)
         print(f"Операции отсортированы по дате {'по убыванию' if reverse else 'по возрастанию'}")
 
     # Фильтрация по рублевым транзакциям
     if get_yes_no("\nВыводить только рублевые транзакции?"):
-        filtered_transactions = filter_by_currency(filtered_transactions, 'RUB')
-        print(f"Отфильтровано {len(filtered_transactions)} рублевых транзакций")
-
-    if not filtered_transactions:
-        print("\nНе найдено ни одной транзакции, подходящей под ваши условия фильтрации")
-        return
+        filtered = filter_operations_by_currency(filtered, 'RUB')
+        print(f"Отфильтровано {len(filtered)} рублевых транзакций")
 
     # Поиск по слову в описании
     if get_yes_no("\nОтфильтровать список транзакций по определенному слову в описании?"):
         search_word = input("Введите слово для поиска: ").strip()
         if search_word:
-            filtered_transactions = search_transactions_by_description(filtered_transactions, search_word)
-            print(f"Найдено {len(filtered_transactions)} транзакций, содержащих '{search_word}'")
+            filtered = filter_operations_by_description(filtered, search_word)
+            print(f"Найдено {len(filtered)} транзакций, содержащих '{search_word}'")
 
-    if not filtered_transactions:
+    if not filtered:
         print("\nНе найдено ни одной транзакции, подходящей под ваши условия фильтрации")
         return
 
+    # Пример подсчёта по категориям (демонстрация)
+    categories = ['Перевод', 'Открытие', 'Оплата']
+    category_counts = count_operations_by_categories(filtered, categories)
+    print(f"\nПодсчёт по категориям: {category_counts}")
+
     # Вывод результатов
     print("\nРаспечатываю итоговый список транзакций...")
-    print(f"\nВсего банковских операций в выборке: {len(filtered_transactions)}")
-
-    for transaction in filtered_transactions:
+    print(f"\nВсего банковских операций в выборке: {len(filtered)}")
+    for transaction in filtered:
         print(format_transaction(transaction))
 
-    logger.info(f"Программа завершена. Выведено {len(filtered_transactions)} транзакций")
+    logger.info("ПРОГРАММА ЗАВЕРШЕНА")
     print("\n" + "=" * 50)
     print("ПРОГРАММА ЗАВЕРШЕНА")
     print("=" * 50)
