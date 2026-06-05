@@ -1,6 +1,5 @@
-﻿import pandas as pd
+﻿import csv
 from typing import List, Dict, Any, Optional
-
 from src.logger_config import setup_logger
 
 logger = setup_logger('file_reader')
@@ -9,6 +8,7 @@ logger = setup_logger('file_reader')
 def read_csv_transactions(file_path: str) -> List[Dict[str, Any]]:
     """
     Считывает финансовые операции из CSV-файла
+    Использует встроенный модуль csv
 
     Args:
         file_path: Путь к CSV-файлу
@@ -19,22 +19,38 @@ def read_csv_transactions(file_path: str) -> List[Dict[str, Any]]:
     logger.info(f"Начало чтения CSV-файла: {file_path}")
 
     try:
-        # Читаем CSV файл с правильной обработкой заголовков
-        df = pd.read_csv(file_path, encoding='utf-8')
+        transactions = []
 
-        # Проверяем, что файл не пустой
-        if df.empty:
-            logger.warning(f"CSV-файл {file_path} пуст")
-            return []
+        # Используем utf-8-sig для удаления BOM
+        with open(file_path, 'r', encoding='utf-8-sig') as file:
+            # Определяем разделитель (запятая или точка с запятой)
+            sample = file.read(1024)
+            file.seek(0)
+            delimiter = ';' if ';' in sample else ','
 
-        # Преобразуем DataFrame в список словарей
-        transactions = df.to_dict(orient='records')
+            logger.debug(f"Определён разделитель: '{delimiter}'")
 
-        # Обрабатываем NaN значения
-        for transaction in transactions:
-            for key, value in transaction.items():
-                if pd.isna(value):
-                    transaction[key] = None
+            # Используем csv.DictReader
+            reader = csv.DictReader(file, delimiter=delimiter)
+
+            for row in reader:
+                # Преобразуем типы данных
+                cleaned_row = {}
+                for key, value in row.items():
+                    # Удаляем возможные пробелы
+                    if isinstance(value, str):
+                        value = value.strip()
+
+                    # Пробуем преобразовать в число, если возможно
+                    if value is None or value == '':
+                        cleaned_row[key] = None
+                    elif value.isdigit():
+                        cleaned_row[key] = int(value)
+                    elif value.replace('.', '', 1).isdigit() and value.count('.') <= 1:
+                        cleaned_row[key] = float(value)
+                    else:
+                        cleaned_row[key] = value
+                transactions.append(cleaned_row)
 
         logger.info(f"Успешно загружено {len(transactions)} транзакций из CSV")
         if transactions:
@@ -44,8 +60,8 @@ def read_csv_transactions(file_path: str) -> List[Dict[str, Any]]:
     except FileNotFoundError as e:
         logger.error(f"CSV-файл не найден: {file_path}. Ошибка: {e}")
         return []
-    except pd.errors.EmptyDataError as e:
-        logger.error(f"CSV-файл пуст: {file_path}. Ошибка: {e}")
+    except csv.Error as e:
+        logger.error(f"Ошибка CSV: {e}")
         return []
     except Exception as e:
         logger.error(f"Ошибка при чтении CSV-файла {file_path}: {e}")
@@ -65,19 +81,33 @@ def read_excel_transactions(file_path: str) -> List[Dict[str, Any]]:
     logger.info(f"Начало чтения Excel-файла: {file_path}")
 
     try:
-        # Читаем Excel файл
+        import pandas as pd
         df = pd.read_excel(file_path, engine='openpyxl')
 
         if df.empty:
             logger.warning(f"Excel-файл {file_path} пуст")
             return []
 
+        # Преобразуем типы данных
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                df[col] = df[col].astype(str).str.strip()
+            elif df[col].dtype in ['int64', 'float64']:
+                pass
+
         transactions = df.to_dict(orient='records')
 
+        # Обрабатываем NaN значения
         for transaction in transactions:
             for key, value in transaction.items():
                 if pd.isna(value):
                     transaction[key] = None
+                elif isinstance(value, str):
+                    # Пробуем преобразовать строки в числа
+                    if value.isdigit():
+                        transaction[key] = int(value)
+                    elif value.replace('.', '', 1).isdigit() and value.count('.') <= 1:
+                        transaction[key] = float(value)
 
         logger.info(f"Успешно загружено {len(transactions)} транзакций из Excel")
         if transactions:
